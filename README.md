@@ -15,6 +15,7 @@ We welcome open-source collaboration. Join our community for updates and help:
 - [Quick Start Example](#quick-start-example)
 - [Installation](#installation)
 - [Use the Pre-built Docker Image](#use-the-pre-built-docker-image)
+- [User Guide](#user-guide)
 - [Persistence](#persistence)
 - [Observability (OpenTelemetry)](#observability-opentelemetry)
 - [Architecture](#architecture)
@@ -299,6 +300,13 @@ you can use the pre-built Docker image.
         tensor_parallel_size: 2
     ```
 
+## User Guide
+We provide practical examples to demonstrate how to use TuFT for training and sampling. The guides below cover both Supervised Fine-Tuning and Reinforcement Learning workflows, with links to runnable notebooks.
+
+| Dataset | Task | Guide | Example |
+|---|---|---|---|
+| [no_robots](https://huggingface.co/datasets/HuggingFaceH4/no_robots) | Supervised Fine-Tuning (SFT) | [chat_sft.md](docs/chat_sft.md) | [chat_sft.ipynb](examples/chat_sft.ipynb) |
+| [Countdown](https://huggingface.co/datasets/Jiayi-Pan/Countdown-Tasks-3to4) | Reinforcement Learning (RL) | [countdown_rl.md](docs/countdown_rl.md) | [countdown_rl.ipynb](examples/countdown_rl.ipynb) |
 
 
 ## Persistence
