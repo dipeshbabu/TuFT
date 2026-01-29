@@ -1,4 +1,6 @@
-# TuFT
+<div align="center">
+  <img src="assets/tuft-logo-colorful.svg" alt="TuFT Logo" width="400"/>
+</div>
 
 TuFT (**T**enant-**u**nified **F**ine**T**uning) is a multi-tenant system that provides a unified
 service API for finetuning large language models (LLMs).
