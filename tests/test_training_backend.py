@@ -5,6 +5,7 @@ from typing import List
 
 import numpy as np
 import pytest
+import ray
 import transformers
 from tinker import types
 
@@ -17,7 +18,21 @@ from .helpers import (
     PIG_LATIN_EXAMPLES_EXTENDED,
     TEST_PROMPTS,
     _normalize_text,
+    clear_ray_state,
 )
+
+
+@pytest.fixture(scope="function")
+def ray_cluster(request):
+    if request.config.getoption("--gpu"):
+        # make sure we start with a fresh ray instance
+        clear_ray_state()
+
+        ray.init(ignore_reinit_error=True)
+        yield
+        clear_ray_state()
+    else:
+        yield
 
 
 def _construct_data(name: str = "extended") -> List[types.Datum]:
