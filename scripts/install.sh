@@ -276,8 +276,6 @@ case "${1:-}" in
     launch)
         shift
         # Default configuration
-        HOST="${TUFT_HOST:-127.0.0.1}"
-        PORT="${TUFT_PORT:-8000}"
         CHECKPOINT_DIR="${TUFT_CHECKPOINT_DIR:-$TUFT_HOME/checkpoints}"
         MODEL_CONFIG=""
         LOG_LEVEL="info"
@@ -287,11 +285,11 @@ case "${1:-}" in
         while [[ $# -gt 0 ]]; do
             case "$1" in
                 --host)
-                    HOST="$2"
+                    EXTRA_ARGS+=("--host" "$2")
                     shift 2
                     ;;
                 --port|-p)
-                    PORT="$2"
+                    EXTRA_ARGS+=("--port" "$2")
                     shift 2
                     ;;
                 --model-config)
@@ -341,15 +339,11 @@ case "${1:-}" in
         fi
 
         echo "Starting TuFT server..."
-        echo "  Host: $HOST"
-        echo "  Port: $PORT"
         echo "  Model Config: $MODEL_CONFIG"
         echo "  Checkpoint Dir: $CHECKPOINT_DIR"
         echo ""
 
         exec "$TUFT_PYTHON" -m tuft \
-            --host "$HOST" \
-            --port "$PORT" \
             --model-config "$MODEL_CONFIG" \
             --checkpoint-dir "$CHECKPOINT_DIR" \
             --log-level "$LOG_LEVEL" \
@@ -427,8 +421,8 @@ case "${1:-}" in
         echo "  help              Show this help message"
         echo ""
         echo "Launch Options:"
-        echo "  --host          Host to bind to (default: 127.0.0.1)"
-        echo "  --port, -p      Port to bind to (default: 8000)"
+        echo "  --host          Host to bind to"
+        echo "  --port, -p      Port to bind to"
         echo "  --model-config  Path to model configuration YAML (required)"
         echo "  --checkpoint-dir Directory for checkpoints (default: ~/.tuft/checkpoints)"
         echo "  --log-level     Log level: debug, info, warning, error (default: info)"
@@ -441,7 +435,7 @@ case "${1:-}" in
         echo ""
         echo "Examples:"
         echo "  tuft launch --model-config models.yaml"
-        echo "  tuft launch --port 8080 --model-config /path/to/models.yaml"
+        echo "  tuft launch --port 10610 --model-config /path/to/models.yaml"
         echo "  tuft upgrade"
         echo ""
         echo "Documentation: https://github.com/agentscope-ai/tuft"
