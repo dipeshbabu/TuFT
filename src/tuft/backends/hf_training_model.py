@@ -383,7 +383,6 @@ class HFTrainingModel:
 
         return loss_value, metric, loss_fn_outputs
 
-
     async def optim_step(
         self,
         adam_params: types.AdamParams,
