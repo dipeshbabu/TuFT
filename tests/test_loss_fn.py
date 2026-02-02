@@ -245,7 +245,9 @@ def test_loss_fn_metrics_reduction():
     assert torch.isclose(
         torch.tensor(reduced_metrics["loss:mean"]), torch.tensor(expected_loss_mean)
     ), "Reduced loss:mean mismatch."
-    assert reduced_metrics["accuracy:sum"] == expected_accuracy_sum, "Reduced accuracy:sum mismatch."
+    assert reduced_metrics["accuracy:sum"] == expected_accuracy_sum, (
+        "Reduced accuracy:sum mismatch."
+    )
     assert reduced_metrics["time:min"] == expected_time_min, "Reduced time:min mismatch."
     assert reduced_metrics["time:max"] == expected_time_max, "Reduced time:max mismatch."
 

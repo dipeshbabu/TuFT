@@ -137,6 +137,7 @@ class LossFunctionInputShapeMismatchException(LossFunctionException):
         super().__init__(detail)
         self.shapes = shapes
 
+
 class LossFunctionUnknownMetricReductionException(LossFunctionException):
     def __init__(self, reduction_type: str):
         detail = f"Unknown metric reduction type: {reduction_type}"
