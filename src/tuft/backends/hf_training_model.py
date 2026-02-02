@@ -383,25 +383,6 @@ class HFTrainingModel:
 
         return loss_value, metric, loss_fn_outputs
 
-    def _accumulate_metrics(self, accumulated: dict, new_metrics: dict) -> dict:
-        """Accumulate metrics from multiple micro-batches."""
-        result = {}
-        for key in accumulated.keys():
-            if key in new_metrics:
-                if isinstance(accumulated[key], (int, float)):
-                    result[key] = accumulated[key] + new_metrics[key]
-                elif torch.is_tensor(accumulated[key]):
-                    result[key] = accumulated[key] + new_metrics[key]
-                else:
-                    result[key] = accumulated[key]
-            else:
-                result[key] = accumulated[key]
-
-        for key in new_metrics.keys():
-            if key not in result:
-                result[key] = new_metrics[key]
-
-        return result
 
     async def optim_step(
         self,

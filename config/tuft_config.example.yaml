@@ -4,7 +4,7 @@
 # Copy this file to your desired location and modify as needed.
 #
 # Usage:
-#   tuft --config /path/to/your/tuft_config.yaml
+#   tuft launch --config /path/to/your/tuft_config.yaml
 
 # =============================================================================
 # Checkpoint Directory
@@ -79,23 +79,32 @@ authorized_users:
 # Persistence Configuration
 # =============================================================================
 # Configure state persistence for recovery after server restart.
+# For detailed documentation, see the "Persistence" section in README.md.
 #
 # Available modes:
-#   - disabled: No persistence (default)
-#   - redis_url: External Redis server
-#   - file_redis: File-backed store
+#   - DISABLE: No persistence (default)
+#   - REDIS: External Redis server
+#   - FILE: File-backed store
 
 persistence:
-  mode: disabled  # Options: disabled, redis_url, file_redis
+  mode: DISABLE  # Options: DISABLE, REDIS, FILE
 
-  # For redis_url mode:
+  # For REDIS mode:
   # redis_url: "redis://localhost:6379/0"
 
-  # For file_redis mode:
+  # For FILE mode:
   # file_path: "~/.cache/tuft/file_redis.json"
 
-  # Namespace prefix for Redis keys (optional)
-  # namespace: "tuft"
+  # Namespace prefix for Redis keys. (optional, defaults to "persistence-tuft-server".)
+  # namespace: "persistence-tuft-server"
+
+  # Fields to validate on server restart for config consistency.
+  # For detailed documentation on available fields and config validation,
+  # see the "Configuration Validation" section in README.md.
+  # Defaults to ["SUPPORTED_MODELS"]. SUPPORTED_MODELS is always checked.
+  # check_fields:
+  #   - SUPPORTED_MODELS
+  #   - CHECKPOINT_DIR
 
 # =============================================================================
 # Telemetry Configuration (OpenTelemetry)

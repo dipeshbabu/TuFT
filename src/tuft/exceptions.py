@@ -1,5 +1,7 @@
 """Some custom exceptions."""
 
+from typing import Any
+
 
 class TuFTException(Exception):
     """Base exception for TuFT errors."""
@@ -143,3 +145,51 @@ class LossFunctionUnknownMetricReductionException(LossFunctionException):
         detail = f"Unknown metric reduction type: {reduction_type}"
         super().__init__(detail)
         self.reduction_type = reduction_type
+
+
+class PersistenceException(TuFTException):
+    """Base exception for Persistence related errors."""
+
+
+class ConfigMismatchError(PersistenceException):
+    """Raised when current config doesn't match the stored config in Redis.
+
+    This error occurs during server startup when persistence is enabled and
+    the configuration has changed since the last run. This can cause data
+    corruption when restoring persisted state.
+    """
+
+    def __init__(
+        self,
+        diff: dict[str, dict[str, Any]],
+    ):
+        self.diff = diff
+
+        # Build detailed diff message
+        diff_parts = []
+        for field_name, field_diff in diff.items():
+            # Handle scalar fields (current/stored)
+            current = field_diff.get("current")
+            stored = field_diff.get("stored")
+
+            parts = []
+            if current is not None or stored is not None:
+                parts.append(f"current: {current}, stored: {stored}")
+
+            if parts:
+                diff_parts.append(f"{field_name} ({', '.join(parts)})")
+
+        diff_str = "; ".join(diff_parts) if diff_parts else "unknown difference"
+
+        message = (
+            f"Configuration mismatch detected: {diff_str}.\n"
+            "The current configuration does not match the stored configuration in Redis.\n"
+            "This can cause data corruption when restoring persisted state.\n\n"
+            "Options:\n"
+            "  1. Use a different Redis database (change redis_url in config)\n"
+            "  2. Run `tuft clear persistence -c <config_path>` to clear existing data\n"
+            "     Use `--force` or `-f` to skip confirmation prompt.\n"
+            "     (WARNING: This will delete all persisted sessions, training runs, etc.)\n"
+            "  3. Restore the original configuration that matches the stored data"
+        )
+        super().__init__(message)

@@ -224,6 +224,7 @@ def test_dro_loss():
         loss_fn(loss_fn_inputs_missing, loss_fn_config)
 
 
+@pytest.mark.gpu
 def test_loss_fn_metrics_reduction():
     import torch
 
