@@ -446,7 +446,7 @@ async def test_rest_client(request, tmp_path) -> None:
                 num_samples=1,
                 sampling_params=types.SamplingParams(max_tokens=2, temperature=0.1),
                 sampling_session_id=sampler_1,
-                seq_id=1,
+                seq_id=0,
             ),
             user_id="other_user",
         )
@@ -465,7 +465,7 @@ async def test_rest_client(request, tmp_path) -> None:
             num_samples=1,
             sampling_params=types.SamplingParams(max_tokens=2, temperature=0.1),
             sampling_session_id=sampler_2,
-            seq_id=1,
+            seq_id=0,
         ),
         user_id="tester",
     )

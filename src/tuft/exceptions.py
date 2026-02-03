@@ -81,6 +81,15 @@ class SequenceConflictException(FutureException):
         self.got = got
 
 
+class SequenceTimeoutException(FutureException):
+    """Timeout waiting for the expected sequence ID."""
+
+    def __init__(self, expected_sequence_id: int):
+        detail = f"Timeout when waiting for sequence ID {expected_sequence_id}."
+        super().__init__(detail)
+        self.sequence_id = expected_sequence_id
+
+
 class MissingSequenceIDException(FutureException):
     """Missing sequence ID in the request."""
 

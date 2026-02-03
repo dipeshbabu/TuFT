@@ -2,50 +2,54 @@ import asyncio
 import heapq
 from typing import Any, Callable
 
+from .exceptions import SequenceTimeoutException, SequenceConflictException
+
 
 class SequenceExecutor:
-    """An executor that processes tasks in the order of their `sequence_id`.
-    If tasks are added to the queue out of order, they will be buffered until
-    all prior tasks have been processed. But if there are no pending tasks,
-    new tasks will be processed immediately.
+    """An executor that processes tasks strictly in the order of their `sequence_id`.
+    Out-of-order tasks are buffered until all previous sequence ids have been processed.
     """
 
-    def __init__(self):
-        self.task_queue = asyncio.Queue()
-        self.pending_heap = []
+    def __init__(self, timeout: float = 900, next_sequence_id: int = 0) -> None:
+        self.pending_heap = []  # (sequence_id, func, kwargs, future)
         self.heap_lock = asyncio.Lock()
-        self.processor_task = None
+        self.next_sequence_id = next_sequence_id
+        self._processing = False
+        self.timeout = timeout
 
     async def submit(self, sequence_id: int, func: Callable, **kwargs) -> Any:
-        """Submit a task with a specific sequence_id for ordered execution.
-
-        Args:
-            sequence_id: The sequence ID to determine execution order.
-            func: The callable to execute. It should be an async function.
-            **kwargs: Arguments to pass to the callable.
-        """
+        if sequence_id < self.next_sequence_id:
+            raise SequenceConflictException(
+                expected=self.next_sequence_id, got=sequence_id
+            )
         future = asyncio.Future()
-        await self.task_queue.put((sequence_id, func, kwargs, future))
-        if self.processor_task is None or self.processor_task.done():
-            self.processor_task = asyncio.create_task(self._process_tasks())
-        result = await future
+        async with self.heap_lock:
+            heapq.heappush(self.pending_heap, (sequence_id, func, kwargs, future))
+            # Start processing if not already running
+            if not self._processing:
+                self._processing = True
+                asyncio.create_task(self._process_tasks())
+        try:
+            result = await asyncio.wait_for(future, timeout=self.timeout)
+        except (asyncio.TimeoutError, asyncio.CancelledError) as e:
+            raise SequenceTimeoutException(sequence_id) from e
         return result
 
     async def _process_tasks(self):
         while True:
-            try:
-                task_info = await asyncio.wait_for(self.task_queue.get(), timeout=0.1)
-                async with self.heap_lock:
-                    heapq.heappush(self.pending_heap, task_info)
-            except asyncio.TimeoutError:
-                async with self.heap_lock:
-                    if not self.pending_heap and self.task_queue.empty():
-                        break
             async with self.heap_lock:
-                if self.pending_heap:
-                    _, func, kwargs, future = heapq.heappop(self.pending_heap)
-                else:
-                    continue
+                if not self.pending_heap:
+                    self._processing = False
+                    break
+                # Peek at the smallest sequence_id
+                sequence_id, func, kwargs, future = self.pending_heap[0]
+                if sequence_id != self.next_sequence_id:
+                    # wait next sequence_id
+                    self._processing = False
+                    break
+
+                heapq.heappop(self.pending_heap)
+                self.next_sequence_id += 1
             try:
                 result = await func(**kwargs)
                 if not future.done():

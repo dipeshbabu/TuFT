@@ -170,7 +170,7 @@ async def _create_sampling(state, session_id, seq_id=1, user_id="tester", model_
     )
 
 
-async def _run_sample(state, sampling_id, user_id="tester", seq_id=1):
+async def _run_sample(state, sampling_id, user_id="tester", seq_id=0):
     """Helper to run sample."""
     return await state.run_sample(
         types.SampleRequest(

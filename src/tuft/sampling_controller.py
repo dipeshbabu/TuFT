@@ -70,6 +70,10 @@ class SamplingSessionRecord(BaseModel):
     session_seq_id: int
     last_seq_id: int = -1
     history: list[SamplingHistoryEntry] = Field(default_factory=list)
+    executor: SequenceExecutor = Field(default_factory=SequenceExecutor, exclude=True)
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class SamplingController:
@@ -84,7 +88,6 @@ class SamplingController:
             config.supported_models
         )
         self._restore_from_redis()
-        self.sequence_executor = SequenceExecutor()
 
     def _build_key(self, session_id: str) -> str:
         return get_redis_store().build_key(self.REDIS_KEY_PREFIX, session_id)
@@ -275,7 +278,7 @@ class SamplingController:
                 raise UserMismatchException()
             if request.seq_id is None:
                 raise MissingSequenceIDException()
-            await self.sequence_executor.submit(
+            await record.executor.submit(
                 sequence_id=request.seq_id,
                 func=self._record_sequence,
                 record=record,

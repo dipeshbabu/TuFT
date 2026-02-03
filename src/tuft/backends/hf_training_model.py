@@ -239,7 +239,7 @@ class HFTrainingModel:
             span.set_attribute("tuft.num_micro_batches", num_micro_batches)
 
             if num_micro_batches > 1:
-                self.logger.info(
+                self.logger.debug(
                     f"[MICRO_BATCH] Splitting batch_size={batch_size} into "
                     f"{num_micro_batches} micro-batches of size {micro_batch_size}"
                 )
@@ -288,7 +288,7 @@ class HFTrainingModel:
                     torch.cuda.empty_cache()
 
             avg_loss = total_loss / num_micro_batches
-            self.logger.info(f"Average loss: {avg_loss}")
+            self.logger.debug(f"Average loss: {avg_loss}")
             metric_list = metrics_reduction(metric_list, micro_batch_weights)
 
             self.logger.debug(
@@ -458,6 +458,9 @@ class HFTrainingModel:
     def _compute_logprobs_from_target_tokens(
         self, logits: torch.Tensor, target_tokens: torch.Tensor
     ) -> torch.Tensor:
+        """Compute log probabilities of target tokens from logits with low memory usage.
+        https://github.com/OpenRLHF/OpenRLHF/pull/718
+        """
         if logits.dtype in [torch.float32, torch.float64]:
             logits_labels = torch.gather(logits, dim=-1, index=target_tokens.unsqueeze(-1)).squeeze(
                 -1
