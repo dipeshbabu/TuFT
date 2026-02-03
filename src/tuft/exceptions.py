@@ -81,6 +81,15 @@ class SequenceConflictException(FutureException):
         self.got = got
 
 
+class SequenceTimeoutException(FutureException):
+    """Timeout waiting for the expected sequence ID."""
+
+    def __init__(self, expected_sequence_id: int):
+        detail = f"Timeout when waiting for sequence ID {expected_sequence_id}."
+        super().__init__(detail)
+        self.sequence_id = expected_sequence_id
+
+
 class MissingSequenceIDException(FutureException):
     """Missing sequence ID in the request."""
 
@@ -138,6 +147,13 @@ class LossFunctionInputShapeMismatchException(LossFunctionException):
         detail = f"Input tensors must have the same shape. Got shapes: {shapes}"
         super().__init__(detail)
         self.shapes = shapes
+
+
+class LossFunctionUnknownMetricReductionException(LossFunctionException):
+    def __init__(self, reduction_type: str):
+        detail = f"Unknown metric reduction type: {reduction_type}"
+        super().__init__(detail)
+        self.reduction_type = reduction_type
 
 
 class PersistenceException(TuFTException):

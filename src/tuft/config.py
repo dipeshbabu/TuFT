@@ -51,6 +51,9 @@ class ModelConfig(BaseModel):
     max_lora_rank: int = 16  # maximum rank for LoRA adapters
     max_loras: int = 1  # maximum number of LoRA adapters that can be applied simultaneously
 
+    # default training setting
+    micro_batch_size: int = 1  # micro-batch size for training
+
     # whether to colocate sampling and training on the same device
     # only for local testing purposes
     colocate: bool = False

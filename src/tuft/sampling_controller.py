@@ -20,12 +20,17 @@ from .exceptions import (
     CheckpointAccessDeniedException,
     CheckpointNotFoundException,
     MissingSequenceIDException,
-    SequenceConflictException,
     SessionNotFoundException,
     UnknownModelException,
     UserMismatchException,
 )
-from .persistence import get_redis_store, is_persistence_enabled, load_record, save_record
+from .persistence import (
+    get_redis_store,
+    is_persistence_enabled,
+    load_record,
+    save_record,
+)
+from .sequence_executor import SequenceExecutor
 from .telemetry.metrics import get_metrics
 from .telemetry.tracing import get_tracer
 
@@ -65,6 +70,10 @@ class SamplingSessionRecord(BaseModel):
     session_seq_id: int
     last_seq_id: int = -1
     history: list[SamplingHistoryEntry] = Field(default_factory=list)
+    executor: SequenceExecutor = Field(default_factory=SequenceExecutor, exclude=True)
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class SamplingController:
@@ -238,11 +247,9 @@ class SamplingController:
         tokens = ",".join(str(token) for token in prompt.to_ints())
         return hashlib.sha1(tokens.encode("utf-8")).hexdigest()[:16]
 
-    def _record_sequence(
+    async def _record_sequence(
         self, record: SamplingSessionRecord, seq_id: int, prompt: types.ModelInput
     ) -> None:
-        if seq_id <= record.last_seq_id:
-            raise SequenceConflictException(expected=record.last_seq_id + 1, got=seq_id)
         record.last_seq_id = seq_id
         entry = SamplingHistoryEntry(
             seq_id=seq_id,
@@ -252,7 +259,7 @@ class SamplingController:
         record.history.append(entry)
         self._save_session(record.sampling_session_id)
 
-    def _resolve_backend(
+    async def _resolve_backend(
         self, request: types.SampleRequest, user_id: str
     ) -> Tuple[BaseSamplingBackend, str | None]:
         """Resolve the appropriate backend for the sampling request.
@@ -271,7 +278,13 @@ class SamplingController:
                 raise UserMismatchException()
             if request.seq_id is None:
                 raise MissingSequenceIDException()
-            self._record_sequence(record, request.seq_id, request.prompt)
+            await record.executor.submit(
+                sequence_id=request.seq_id,
+                func=self._record_sequence,
+                record=record,
+                seq_id=request.seq_id,
+                prompt=request.prompt,
+            )
             if record.base_model not in self._base_backends:
                 raise UnknownModelException(model_name=record.base_model)
             if record.model_path is None:
@@ -299,7 +312,7 @@ class SamplingController:
             logger.info("Sampling begin for %s", sampling_session_id)
             start_time = time.perf_counter()
 
-            backend, lora_id = self._resolve_backend(request, user_id=user_id)
+            backend, lora_id = await self._resolve_backend(request, user_id=user_id)
             prompt = request.prompt
             sampling_params = request.sampling_params
             num_samples = request.num_samples
