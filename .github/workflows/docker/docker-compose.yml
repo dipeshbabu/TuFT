@@ -13,7 +13,7 @@ services:
       && ln -sf /usr/bin/python3 /usr/bin/python \
       && ln -sf /usr/bin/pip3 /usr/bin/pip \
       && bash /workspace/scripts/install.sh --local-source /workspace \
-      && source $HOME/.local/bin/env \
+      && source /root/.local/bin/env \
       && source /root/.tuft/venv/bin/activate \
       && uv pip install .[dev] \
       && ray start --head --dashboard-host 0.0.0.0 --include-dashboard true --block"
