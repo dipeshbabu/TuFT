@@ -271,18 +271,23 @@ class TrainingController:
         operation: Callable[[], Awaitable[T]],
     ) -> T:
         async with record._execution_lock:
-            if seq_id is not None:
-                self._reserve_seq_id(record, seq_id)
-                # Save the updated next_seq_id to Redis
-                loop = asyncio.get_event_loop()
-                await loop.run_in_executor(None, self._save_training_run, record.training_run_id)
-            return await operation()
-
-    def _reserve_seq_id(self, record: TrainingRunRecord, seq_id: int) -> None:
-        expected = record.next_seq_id
-        if seq_id != expected:
-            raise SequenceConflictException(expected=expected, got=seq_id)
-        record.next_seq_id += 1
+            try:
+                if seq_id is not None:
+                    expected = record.next_seq_id
+                    if seq_id != expected:
+                        raise SequenceConflictException(expected=expected, got=seq_id)
+                    # Save the updated next_seq_id to Redis
+                    # Save the updated next_seq_id to Redis
+                    loop = asyncio.get_event_loop()
+                    await loop.run_in_executor(
+                        None, self._save_training_run, record.training_run_id
+                    )
+                result = await operation()
+                if seq_id is not None:
+                    record.next_seq_id += 1
+                return result
+            except Exception as e:
+                raise e
 
     async def create_model(
         self,
@@ -392,7 +397,6 @@ class TrainingController:
                     loss_fn_config=loss_fn_config,
                     backward=backward,
                 )
-                logger.info("Forward/backward completed for %s", model_id)
                 return result
 
             result = await self._with_sequence_guard(record, seq_id, _operation)
