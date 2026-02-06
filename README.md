@@ -6,17 +6,21 @@
   <a href="https://agentscope-ai.github.io/TuFT"><img src="https://img.shields.io/badge/docs-online-blue" alt="Docs"/></a>
   <a href="https://pypi.org/project/tuft/"><img src="https://img.shields.io/pypi/v/tuft" alt="PyPI"/></a>
   <a href="https://qr.dingtalk.com/action/joingroup?code=v1,k1,UWvzO6HHSeuvRQ5WXCOMJEijadQV+hDjhMIpiVr8qCs=&_dt_no_comment=1&origin=11?"><img src="https://img.shields.io/badge/DingTalk-join-blue" alt="DingTalk"/></a>
-  <a href="https://discord.gg/wEahC7ZJ"><img src="https://img.shields.io/badge/Discord-join-5865F2" alt="Discord"/></a>
+  <a href="https://discord.gg/BCNCaQGxBH"><img src="https://img.shields.io/badge/Discord-join-5865F2" alt="Discord"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/agentscope-ai/TuFT" alt="License"/></a>
 </p>
 
 TuFT (**T**enant-**u**nified **F**ine**T**uning) is a multi-tenant platform that lets multiple users fine-tune LLMs on shared infrastructure through a unified API. Access it via the Tinker SDK or compatible clients.
 
+<div align="center">
+  <img src="docs/sphinx_doc/_static/images/index.png" alt="TuFT Overview" width="800"/>
+</div>
+
 Check out our [roadmap](#roadmap) to see what we're building next.
 
 We're open source and welcome contributions! Join the community:
 - [DingTalk Group](https://qr.dingtalk.com/action/joingroup?code=v1,k1,UWvzO6HHSeuvRQ5WXCOMJEijadQV+hDjhMIpiVr8qCs=&_dt_no_comment=1&origin=11?)
-- [Discord](https://discord.gg/wEahC7ZJ)
+- [Discord](https://discord.gg/BCNCaQGxBH)
 
 ## Table of Contents
 
@@ -25,9 +29,6 @@ We're open source and welcome contributions! Join the community:
 - [Installation](#installation)
 - [Use the Pre-built Docker Image](#use-the-pre-built-docker-image)
 - [User Guide](#user-guide)
-- [Persistence](#persistence)
-- [Observability (OpenTelemetry)](#observability-opentelemetry)
-- [Console](#console)
 - [Architecture](#architecture)
 - [Roadmap](#roadmap)
 - [Development](#development)
@@ -315,57 +316,16 @@ you can use the pre-built Docker image.
     ```
 
 ## User Guide
-We provide practical examples to demonstrate how to use TuFT for training and sampling. The guides below cover both Supervised Fine-Tuning and Reinforcement Learning workflows, with links to runnable notebooks.
 
-| Dataset | Task | Guide | Example |
-|---|---|---|---|
-| [no_robots](https://huggingface.co/datasets/HuggingFaceH4/no_robots) | Supervised Fine-Tuning (SFT) | [chat_sft.md](docs/chat_sft.md) | [chat_sft.ipynb](examples/chat_sft/chat_sft.ipynb) |
-| [Countdown](https://huggingface.co/datasets/Jiayi-Pan/Countdown-Tasks-3to4) | Reinforcement Learning (RL) | [countdown_rl.md](docs/countdown_rl.md) | [countdown_rl.ipynb](examples/countdown_rl/countdown_rl.ipynb) |
+We provide practical examples and comprehensive guides for using TuFT. For full details, please visit the [online documentation](https://agentscope-ai.github.io/TuFT).
 
-
-## Persistence
-
-TuFT supports optional persistence for server state. When enabled, the server can recover sessions, training runs, sampling sessions, and futures after a restart (and then restore runtime model state from checkpoints).
-
-See [docs/persistence.md](docs/persistence.md) for full details (key layout, restore semantics, and safety checks).
-
-```bash
-uv pip install "tuft[persistence]"
-```
-
-```yaml
-# tuft_config.yaml
-persistence:
-  mode: REDIS
-  redis_url: "redis://localhost:6379/0"
-  namespace: "persistence-tuft-server"
-```
-
-## Observability (OpenTelemetry)
-
-TuFT supports optional OpenTelemetry integration for tracing, metrics, and logs. See [docs/telemetry.md](docs/telemetry.md) for details (what TuFT records, correlation keys, Ray context propagation, and collector setup).
-
-```yaml
-# tuft_config.yaml
-telemetry:
-  enabled: true
-  service_name: tuft
-  otlp_endpoint: http://localhost:4317  # Your OTLP collector endpoint
-  resource_attributes: {}
-```
-
-Alternatively, use environment variables:
-
-```bash
-export TUFT_OTLP_ENDPOINT=http://localhost:4317
-export TUFT_OTEL_DEBUG=1  # Enable console exporter for debugging
-```
-
-## Console
-
-Tuft provides a dashboard for users to know the details of their traning runs and checkpoints. It also provides a sampling playground for users to try out the finetuned models.
-
-See [docs/console.md](docs/console.md) for the console setup.
+| Topic | Description |
+|---|---|
+| [Chat SFT](https://agentscope-ai.github.io/TuFT/en/latest/user-guide/chat-sft.html) | Supervised fine-tuning on chat-formatted data with assistant-only loss masking. [Notebook](examples/chat_sft/chat_sft.ipynb) |
+| [Countdown RL](https://agentscope-ai.github.io/TuFT/en/latest/user-guide/countdown-rl.html) | Reinforcement learning with GRPO-style training on verifiable tasks. [Notebook](examples/countdown_rl/countdown_rl.ipynb) |
+| [Persistence](https://agentscope-ai.github.io/TuFT/en/latest/user-guide/persistence.html) | Optional Redis-based server state persistence for crash recovery. |
+| [Observability](https://agentscope-ai.github.io/TuFT/en/latest/user-guide/telemetry.html) | OpenTelemetry integration for tracing, metrics, and logs. |
+| [Console](https://agentscope-ai.github.io/TuFT/en/latest/user-guide/console.html) | Dashboard for monitoring training runs, checkpoints, and sampling playground. |
 ## Architecture
 
 TuFT provides a unified service API for agentic model training and sampling. The system supports multiple LoRA adapters per base model and checkpoint management.
@@ -449,7 +409,7 @@ This roadmap is not fixed, but rather a starting point for our journey with the 
 
 We welcome suggestions and contributions from the community! Join us on:
 - [DingTalk Group](https://qr.dingtalk.com/action/joingroup?code=v1,k1,UWvzO6HHSeuvRQ5WXCOMJEijadQV+hDjhMIpiVr8qCs=&_dt_no_comment=1&origin=11?)
-- [Discord](https://discord.gg/wEahC7ZJ) (on AgentScope's Server)
+- [Discord](https://discord.gg/BCNCaQGxBH) (on AgentScope's Server)
 
 ## Development
 
@@ -485,7 +445,7 @@ To skip integration tests:
 uv run pytest -m "not integration"
 ```
 
-For detailed testing instructions, including GPU tests, persistence testing, and writing new tests, see the [Testing Guide](docs/how_to_write_tests.md).
+For detailed testing instructions, including GPU tests, persistence testing, and writing new tests, see the [Testing Guide](https://agentscope-ai.github.io/TuFT/en/latest/development/testing.html).
 
 ### Linting and Type Checking
 
