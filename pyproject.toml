@@ -30,7 +30,7 @@ dependencies = [
     "peft>=0.18.0",
     "tensordict>=0.5.0",
     "verl",
-    "trinity-rft[vllm]>=0.4.1",
+    "trinity-rft[vllm]>=0.4.1; sys_platform == 'linux'",
 ]
 
 [project.scripts]
